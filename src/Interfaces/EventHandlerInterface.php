@@ -14,9 +14,9 @@ interface EventHandlerInterface
      *
      * It is recommended output on the event should be presumed null and set here; however
      * if the event is to be handled by multiple objects then it could have output set in those cases.
-	 * 
+     * 
      * @param EventInterface $event The IEvent instance to handle.
-	 * @return void
-	 */
-	public function handle(EventInterface $event);
+     * @return void
+     */
+    public function handle(EventInterface $event);
 }
