@@ -1,0 +1,20 @@
+{
+    "name": "xcitestudios/Parallelisation",
+    "description": "Standard function parallelisation classes and interfaces",
+	"homepage": "https://xcitestudios.com/",
+    "license": "MIT",
+    "keywords": ["xcitestudios", "parallelisation", "events", "distributed"],
+    "authors": [
+        {
+            "name": "Wade Womersley",
+            "email": "wade85@gmail.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "com\\xcitestudios\\Parallelisation\\": "src/"
+        }
+    }
+}
