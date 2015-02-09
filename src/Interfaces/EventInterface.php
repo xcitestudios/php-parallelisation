@@ -1,27 +1,14 @@
 <?php
 namespace com\xcitestudios\Parallelisation\Interfaces;
 
+use com\xcitestudios\Generic\Data\Manipulation\Interfaces\SerializationInterface;
+
 /**
  * An event which determines the type of event and the input and output data storage for that event.
  */
 interface EventInterface
+    extends SerializationInterface
 {
-    /**
-     * Convert a JSON representation of this event in to an actual IEvent object. Either
-     * a generic "event" type of a specific instance type.
-     *
-     * @param string $jsonString Valid JSON representing this event, minimally: {"type": "", "input": {}, "output": {}}
-     * @return void
-     */
-    public function deserialize($jsonString);
-    
-    /**
-     * Convert this event into JSON so it can be handled by anything that supports JSON.
-     *
-     * @return string A representation of this event with minimally the type, input and output present, e.g.: {"type": "", "input": {}, "output": {}}
-     */
-    public function serialize();
-    
     /**
      * Return the type of this event, this is an identifier to determine how to react to it.
      *
@@ -31,7 +18,7 @@ interface EventInterface
      * @return string
      */
     public function getType();
-    
+
     /**
      * Convert a JSON representation of this event in to an actual IEvent object. Either
      * a generic "event" type of a specific instance type.

@@ -1,10 +1,13 @@
 <?php
 namespace com\xcitestudios\Parallelisation\Interfaces;
 
+use com\xcitestudios\Generic\Data\Manipulation\Interfaces\SerializationInterface;
+
 /**
  * Generic output for any event
  */
 interface EventOutputInterface
+    extends SerializationInterface
 {
     /**
      * Sets if the event handled correctly and can the data be trusted to be correct for the request.
@@ -33,20 +36,4 @@ interface EventOutputInterface
      * @return void
      */
     public function setResponseMessage($message);
-    
-    /**
-     * Convert a JSON representation of this event output in to an actual EventOutputInterface object. Either
-     * a generic "event input" type of a specific instance type.
-     *
-     * @param string $jsonString Representation of this input
-     * @return void
-     */
-    public function deserialize($jsonString);
-    
-    /**
-     * Convert this event output into JSON so it can be handled by anything that supports JSON.
-     *
-     * @return string A representation of this input.
-     */
-    public function serialize();
 }

@@ -1,7 +1,7 @@
 {
     "name": "xcitestudios/parallelisation",
     "description": "Standard function parallelisation classes and interfaces",
-	"homepage": "https://xcitestudios.com/",
+    "homepage": "https://xcitestudios.com/",
     "license": "MIT",
     "keywords": ["xcitestudios", "parallelisation", "events", "distributed"],
     "authors": [
@@ -10,11 +10,20 @@
             "email": "wade85@gmail.com"
         }
     ],
-    "require": {},
-    "require-dev": {},
+    "require": {
+        "xcitestudios/generic": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.5.*"
+    },
     "autoload": {
         "psr-4": {
             "com\\xcitestudios\\Parallelisation\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "com\\xcitestudios\\Parallelisation\\Test\\": "tests/"
         }
     }
 }
