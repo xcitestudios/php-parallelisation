@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="com.xcitestudios.Parallelisation" default="tests">
+    <target name="docs">
+        <echo msg="Creating docs"/>
+        <exec command="vendor/bin/phpdoc"/>
+    </target>
+    <target name="tests">
+        <echo msg="Running tests"/>
+        <exec command="vendor/bin/phpunit"
+              checkreturn="true"
+                passthru="true"
+                />
+    </target>
+</project>
