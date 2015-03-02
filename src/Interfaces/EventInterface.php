@@ -13,6 +13,9 @@ use com\xcitestudios\Generic\Data\Manipulation\Interfaces\SerializationInterface
 
 /**
  * An event which determines the type of event and the input and output data storage for that event.
+ *
+ * @package com.xcitestudios.Parallelisation
+ * @subpackage Interfaces
  */
 interface EventInterface
     extends SerializationInterface

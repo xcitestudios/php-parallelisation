@@ -13,6 +13,9 @@ namespace com\xcitestudios\Parallelisation\Interfaces;
  * Handler for an event instance. This should either be generic for the event type
  * or each type of event should have its own handler and implement this interface 
  * only for the type of event it can handle.
+ *
+ * @package com.xcitestudios.Parallelisation
+ * @subpackage Interfaces
  */
 interface EventHandlerInterface
 {

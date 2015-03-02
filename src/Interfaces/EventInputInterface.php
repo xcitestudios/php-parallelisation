@@ -13,6 +13,9 @@ use com\xcitestudios\Generic\Data\Manipulation\Interfaces\SerializationInterface
 
 /**
  * Generic input for any event
+ *
+ * @package com.xcitestudios.Parallelisation
+ * @subpackage Interfaces
  */
 interface EventInputInterface
     extends SerializationInterface
