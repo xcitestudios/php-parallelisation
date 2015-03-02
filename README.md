@@ -16,6 +16,11 @@ From the start the packages are available on packagist (composer).
 ```
 
 
+### Documentation
+
+Documentation generated with PHPDocumentor can be found at [http://xcitestudios.github.io/php-parallelisation]
+
+
 ### Development
 
 Want to contribute? Create pull requests and I'll get in touch!
