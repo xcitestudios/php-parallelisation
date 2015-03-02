@@ -35,7 +35,7 @@ interface EventOutputInterface
     /**
      * Get a general human readable response, useful for providing an error message if WasSuccessful returns false.
      */
-    public function getResponseMessage($message);
+    public function getResponseMessage();
     
     /**
      * Set a general human readable response, useful for providing an error message if WasSuccessful returns false.
