@@ -13,6 +13,6 @@
         <target>docs</target>
     </transformer>
     <transformations>
-        <template name="clean"/>
+        <template name="responsive-twig"/>
     </transformations>
 </phpdoc>
