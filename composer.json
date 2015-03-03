@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "xcitestudios/generic": "dev-master"
+        "xcitestudios/generic": "1.*"
     },
     "require-dev": {
         "phpunit/phpunit": "4.5.*",
