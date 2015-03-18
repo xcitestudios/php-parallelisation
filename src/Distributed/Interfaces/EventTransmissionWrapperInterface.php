@@ -25,7 +25,7 @@ interface EventTransmissionWrapperInterface
     /**
      * Set the event this information is related to.
      * @param EventInterface $event
-     * @return mixed
+     * @return void
      */
     public function setEvent(EventInterface $event);
 
@@ -40,7 +40,7 @@ interface EventTransmissionWrapperInterface
      * Set the Date/Time the event was wrapped/transmitted/pushed.
      *
      * @param DateTime $datetime
-     * @return DateTime
+     * @return void
      */
     public function setDatetime(DateTime $datetime);
 

@@ -14,7 +14,14 @@ use com\xcitestudios\Parallelisation\Interfaces\EventInterface;
 use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
-class RPCWorker {
+/**
+ * RPC worker implementation for AMQP.
+ *
+ * @package com.xcitestudios.Parallelisation
+ * @subpackage Distributed.Queue.AMQP
+ */
+class RPCWorker
+{
     /**
      * @var AbstractConnection
      */
@@ -66,7 +73,7 @@ class RPCWorker {
         $channel = $this->connection->channel();
 
         $channel->basic_qos(null, 1, null);
-        $channel->basic_consume($this->queueName, 'RPCWorker', false, false, false, false, [$this, 'handleMessage']);
+        $channel->basic_consume($this->queueName, '', false, false, false, false, [$this, 'handleMessage']);
 
         while (count($channel->callbacks) > 0) {
             $channel->wait();
