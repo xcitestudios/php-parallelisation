@@ -80,6 +80,11 @@ class RPCWorker
         }
     }
 
+    /**
+     * Handle an incoming message and dispatch to a worker class.
+     *
+     * @param AMQPMessage $message
+     */
     public function handleMessage(AMQPMessage $message)
     {
         if ($this->ackTime === RPCWorkerAckTime::ACK_BEFORE) {

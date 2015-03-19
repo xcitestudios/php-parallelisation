@@ -41,11 +41,13 @@ class RPCEventWrapper implements EventTransmissionWrapperInterface
      *
      * @param EventInterface $event
      *
-     * @return mixed
+     * @return static
      */
     public function setEvent(EventInterface $event)
     {
         $this->event = $event;
+
+        return $this;
     }
 
     /**
@@ -63,11 +65,13 @@ class RPCEventWrapper implements EventTransmissionWrapperInterface
      *
      * @param DateTime $datetime
      *
-     * @return void
+     * @return static
      */
     public function setDatetime(DateTime $datetime)
     {
         $this->datetime = $datetime;
+
+        return $this;
     }
 
     /**
@@ -88,23 +92,5 @@ class RPCEventWrapper implements EventTransmissionWrapperInterface
     public function getTotalMilliseconds()
     {
         return round((microtime(true) * 1000) - ((int)$this->datetime->format('U') * 1000));
-    }
-
-    /**
-     * Marks the RPC as returning.
-     */
-    public function setReturned()
-    {
-        $this->returned = true;
-    }
-
-    /**
-     * Has the RPC returned.
-     *
-     * @return bool
-     */
-    public function hasReturned()
-    {
-        return $this->returned;
     }
 }
