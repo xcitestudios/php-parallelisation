@@ -184,6 +184,7 @@ class RPCDispatcher implements RPCDispatcherInterface
         while (count($this->events) > 0) {
             $this->channel->wait(null, true);
             $this->checkLongRunning();
+            usleep(50000);
         }
     }
 
