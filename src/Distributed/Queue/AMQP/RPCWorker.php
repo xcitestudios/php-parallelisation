@@ -9,6 +9,7 @@
 
 namespace com\xcitestudios\Parallelisation\Distributed\Queue\AMQP;
 
+use com\xcitestudios\Parallelisation\Distributed\Queue\AMQP\Interfaces\RPCWorkerInterface;
 use com\xcitestudios\Parallelisation\Interfaces\EventHandlerInterface;
 use com\xcitestudios\Parallelisation\Interfaces\EventInterface;
 use PhpAmqpLib\Channel\AMQPChannel;
@@ -23,7 +24,7 @@ use RuntimeException;
  * @package com.xcitestudios.Parallelisation
  * @subpackage Distributed.Queue.AMQP
  */
-class RPCWorker
+class RPCWorker implements RPCWorkerInterface
 {
     /**
      * @var AbstractConnection
@@ -137,6 +138,9 @@ class RPCWorker
         $channel->close();
     }
 
+    /**
+     * Stop the worker.
+     */
     public function stop()
     {
         $this->running = false;
