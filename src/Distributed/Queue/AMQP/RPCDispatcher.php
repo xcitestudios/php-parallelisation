@@ -9,13 +9,15 @@
 
 namespace com\xcitestudios\Parallelisation\Distributed\Queue\AMQP;
 
-use com\xcitestudios\Parallelisation\Distributed\Queue\AMQP\Interfaces\RoutableEventInterface;
+use com\xcitestudios\Parallelisation\Distributed\Queue\AMQP\Interfaces\RPCDispatcherInterface;
 use com\xcitestudios\Parallelisation\Interfaces\EventInterface;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use DateTime;
 use stdClass;
+use RuntimeException;
+use InvalidArgumentException;
 
 /**
  * AMQP dispatcher for events with an RPC style response via AMQP.
@@ -23,7 +25,7 @@ use stdClass;
  * @package com.xcitestudios.Parallelisation
  * @subpackage Distributed.Queue.AMQP
  */
-class RPCDispatcher
+class RPCDispatcher implements RPCDispatcherInterface
 {
     /**
      * @var AbstractConnection
@@ -56,6 +58,16 @@ class RPCDispatcher
     protected $maximumExecutionMilliseconds = 0;
 
     /**
+     * @var string
+     */
+    protected $defaultExchange = null;
+
+    /**
+     * @var string
+     */
+    protected $defaultRoutingKey = null;
+
+    /**
      * Constructor.
      *
      * @param AbstractConnection $connection
@@ -70,7 +82,7 @@ class RPCDispatcher
     }
 
     /**
-     * Kick off the worker, this will not return.
+     * Kick off the dispatcher allowing events to be sent.
      */
     public function start()
     {
@@ -107,6 +119,56 @@ class RPCDispatcher
     }
 
     /**
+     * Get the default routing key.
+     *
+     * @return string
+     */
+    public function getDefaultRoutingKey()
+    {
+        return $this->defaultRoutingKey;
+    }
+
+    /**
+     * Set the default routing key.
+     *
+     * @param string $defaultRoutingKey
+     *
+     * @return static
+     */
+    public function setDefaultRoutingKey($defaultRoutingKey)
+    {
+        $this->defaultRoutingKey = $defaultRoutingKey;
+
+        return $this;
+    }
+
+    /**
+     * Get the default exchange to send to.
+     *
+     * @return string
+     */
+    public function getDefaultExchange()
+    {
+        return $this->defaultExchange;
+    }
+
+    /**
+     * Set the default exchange to send to.
+     *
+     * @param string $defaultExchange
+     *
+     * @return static
+     */
+    public function setDefaultExchange($defaultExchange)
+    {
+        $this->defaultExchange = $defaultExchange;
+
+        return $this;
+    }
+
+    /**
+     * Block until all events have been returned or timed out.
+     *
      * @return void
      */
     public function waitForAllEvents()
@@ -120,23 +182,39 @@ class RPCDispatcher
         }
 
         while (count($this->events) > 0) {
-            $this->channel->wait();
+            $this->channel->wait(null, true);
+            $this->checkLongRunning();
         }
     }
 
     /**
-     * Take the event and either check the type to handle it appropriately or strongly
-     * type the event and read the input to create output.
+     * Dispatch the event via AMQP then return immediately. It is up to the user
+     * to check for data coming back.
      *
-     * It is recommended output on the event should be presumed null and set here; however
-     * if the event is to be handled by multiple objects then it could have output set in those cases.
+     * @param EventInterface $event        The EventInterface instance to handle.
+     * @param string         $exchangeName Name of exchange to publish to
+     * @param string         $routingKey   Key used for routing inside AMQP
      *
-     * @param EventInterface $event The IEvent instance to handle.
-     *
+     * @throws RuntimeException Dispatcher isn't running.
      * @return void
      */
-    public function handle(RoutableEventInterface $event)
+    public function handle(EventInterface $event, $exchangeName = null, $routingKey = null)
     {
+        if (!$this->running) {
+            throw new RuntimeException('You cannot send an event without first starting the dispatcher.');
+        }
+
+        $exchangeName = $exchangeName !== null ? $exchangeName : $this->defaultExchange;
+        $routingKey   = $routingKey !== null ? $routingKey : $this->defaultRoutingKey;
+
+        if ($exchangeName === null) {
+            throw new InvalidArgumentException('No exchange specified for dispatch. Either pass one in or use setDefaultExchange.');
+        }
+
+        if ($routingKey === null) {
+            throw new InvalidArgumentException('No routing key specified for dispatch. Either pass one in or use setDefaultRoutingKey');
+        }
+
         $correlationID = uniqid("", true);
 
         $wrapped = new RPCEventWrapper();
@@ -147,7 +225,7 @@ class RPCDispatcher
 
         $message = new AMQPMessage($event->serializeJSON(), ['correlation_id' => $correlationID, 'reply_to' => $this->queueName,]);
 
-        $this->channel->basic_publish($message, $event->getExchangeName(), $event->getRoutingKey());
+        $this->channel->basic_publish($message, $exchangeName, $routingKey);
 
         $this->channel->wait_for_pending_acks();
     }
@@ -155,10 +233,18 @@ class RPCDispatcher
     /**
      * Handles an incoming message and ties it up with a local event.
      *
+     * @internal
+     *
      * @param AMQPMessage $message
+     *
+     * @throws RuntimeException Dispatcher isn't running.
      */
     public function handleMessage(AMQPMessage $message)
     {
+        if (!$this->running) {
+            throw new RuntimeException('You cannot send an event without first starting the dispatcher.');
+        }
+
         $correlationID = $message->get('correlation_id');
 
         if (!array_key_exists($correlationID, $this->events)) {
