@@ -28,7 +28,7 @@ interface RPCDispatcherInterface
      *
      * @return void
      */
-    public function handle(EventInterface $event, $exchangeName, $routingKey);
+    public function handle(EventInterface $event, $exchangeName = null, $routingKey = null);
 
     /**
      * Kick off the dispatcher allowing events to be sent.
