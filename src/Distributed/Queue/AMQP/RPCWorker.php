@@ -17,6 +17,7 @@ use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Exception\AMQPTimeoutException;
 use PhpAmqpLib\Message\AMQPMessage;
 use RuntimeException;
+use InvalidArgumentException;
 
 /**
  * RPC worker implementation for AMQP.
@@ -71,13 +72,13 @@ class RPCWorker implements RPCWorkerInterface
     /**
      * Constructor.
      *
-     * @param AbstractConnection    $connection
+     * @param AbstractConnection    $connection AMQP connection.
      * @param string                $queueName  Name of queue to watch for jobs on.
-     * @param EventHandlerInterface $handler    Handler called with each job that comes in.
-     * @param EventInterface        $eventClass Class used for incoming events.
+     * @param string|callable       $handler    Handler called with each job that comes in, can use a callback to be dynamic. Callback signature is Function(body, routingKey).
+     * @param string|callable       $eventClass Class used for incoming events, can use callback to be dynamic. Callback signature is Function(body, routingKey).
      * @param int                   $ackTime    When to send ACK (before or after handling the event).
      */
-    public function __construct(AbstractConnection $connection, $queueName, EventHandlerInterface $handler, EventInterface $eventClass, $ackTime = RPCWorkerAckTime::ACK_AFTER)
+    public function __construct(AbstractConnection $connection, $queueName, $handler, $eventClass, $ackTime = RPCWorkerAckTime::ACK_AFTER)
     {
         $this->connection = $connection;
         $this->queueName  = $queueName;
@@ -167,10 +168,11 @@ class RPCWorker implements RPCWorkerInterface
             $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
         }
 
-        $event = clone($this->eventClass);
+        $event = $this->getEventClass($message);
         $event->deserializeJSON($message->body);
 
-        $this->handler->handle($event);
+        $handler = $this->getHandler($message);
+        $handler->handle($event);
 
         $response = new AMQPMessage($event->serializeJSON(), ['correlation_id' => $message->get('correlation_id')]);
 
@@ -179,5 +181,64 @@ class RPCWorker implements RPCWorkerInterface
         if ($this->ackTime === RPCWorkerAckTime::ACK_AFTER) {
             $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
         }
+    }
+
+    /**
+     * Get the handler either from the passed in argument or from the callback provided.
+     *
+     * @param AMQPMessage $message
+     *
+     * @return EventHandlerInterface
+     */
+    protected function getHandler(AMQPMessage $message)
+    {
+        if (is_callable($this->handler)) {
+            $callback = $this->handler;
+            $handler  = $callback($message->body, $message->get('routing_key'));
+        } else {
+            $handler = $this->handler;
+        }
+
+        if (!$handler instanceof EventHandlerInterface) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Callback/argument must return an instance of %s, returned type was %s.',
+                    EventHandlerInterface::class, get_class($handler)
+                )
+            );
+        }
+
+        return $handler;
+    }
+
+    /**
+     * Get the event class either from the passed in argument or from the callback provided.
+     *
+     * @param AMQPMessage $message
+     *
+     * @return EventInterface
+     * @throws InvalidArgumentException Callback didn't return a valid type.
+     */
+    protected function getEventClass(AMQPMessage $message)
+    {
+        if (is_callable($this->eventClass)) {
+            $callback  = $this->eventClass;
+            $classname = $callback($message->body, $message->get('routing_key'));
+        } else {
+            $classname = $this->eventClass;
+        }
+
+        $event = new $classname();
+
+        if (!$event instanceof EventInterface) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Callback/argument must return an instance of %s, returned type was %s.',
+                    EventInterface::class, get_class($event)
+                )
+            );
+        }
+
+        return $event;
     }
 }

@@ -14,6 +14,7 @@ use com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion\CSVTo
 use com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion\CSVToJson\Event;
 use com\xcitestudios\Parallelisation\Interfaces\EventHandlerInterface;
 use RuntimeException;
+use stdClass;
 
 abstract class CSVToJson
 {
@@ -40,7 +41,7 @@ abstract class CSVToJson
     /**
      * @var bool
      */
-    protected $firstRowIsHeaders = false;
+    protected $firstRowIsHeaders = true;
 
     /**
      * @var EventHandlerInterface
@@ -153,7 +154,7 @@ abstract class CSVToJson
             }
 
             $this->headers = $this->customHeaders;
-        } elseif(count($this->headers === 0)) {
+        } elseif(count($this->headers) === 0) {
             throw new RuntimeException('Cannot process, no headers in CSV and no custom headers specified');
         }
     }
@@ -172,11 +173,19 @@ abstract class CSVToJson
         $event->setOutput(new EventOutput());
 
         $this->handler->handle($event);
-
-        $this->events[] = $event;
     }
 
     /**
+     * Process the CSV file.
+     *
+     * @return void
      */
     public abstract function process();
+
+    /**
+     * Is processing finished?
+     *
+     * @return bool
+     */
+    public abstract function isFinished();
 }

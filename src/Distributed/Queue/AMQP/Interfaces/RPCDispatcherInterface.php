@@ -8,6 +8,7 @@
  */
 
 namespace com\xcitestudios\Parallelisation\Distributed\Queue\AMQP\Interfaces;
+use com\xcitestudios\Parallelisation\Interfaces\EventHandlerInterface;
 use com\xcitestudios\Parallelisation\Interfaces\EventInterface;
 
 /**
@@ -17,7 +18,7 @@ use com\xcitestudios\Parallelisation\Interfaces\EventInterface;
  * @subpackage Distributed.Queue.AMQP.Interfaces
  */
 
-interface RPCDispatcherInterface
+interface RPCDispatcherInterface extends EventHandlerInterface
 {
     /**
      * Dispatch the event via AMQP.
@@ -46,4 +47,57 @@ interface RPCDispatcherInterface
      * @return void
      */
     public function waitForAllEvents();
+
+    /**
+     * Get the running total of events that have been dispatched.
+     *
+     * @return int
+     */
+    public function getDispatchedEvents();
+
+    /**
+     * Get the running total of events that have returned..
+     *
+     * @return int
+     */
+    public function getCompletedEvents();
+
+    /**
+     * Get the running total of events that have timed out.
+     *
+     * @return int
+     */
+    public function getTimedOutEvents();
+
+    /**
+     * Get the callback to call when an event returns.
+     *
+     * @return callable[]
+     */
+    public function getEventReturnedCallbacks();
+
+    /**
+     * Set the callback to call when an event returns.
+     *
+     * @param callable $eventReturnedCallback
+     *
+     * @return static
+     */
+    public function addEventReturnedCallback(callable $eventReturnedCallback);
+
+    /**
+     * Get the callback to call when an event times out.
+     *
+     * @return callable[]
+     */
+    public function getEventTimedOutCallbacks();
+
+    /**
+     * Set the callback to call when an event times out.
+     *
+     * @param callable $eventTimedOutCallback
+     *
+     * @return static
+     */
+    public function addEventTimedOutCallback(callable $eventTimedOutCallback);
 }

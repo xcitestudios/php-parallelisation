@@ -12,6 +12,12 @@ namespace com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion
 use com\xcitestudios\Parallelisation\EventInput as EventInputAbstract;
 use stdClass;
 
+/**
+ * Event input for converting CSV to JSON.
+ *
+ * @package com.xcitestudios.Parallelisation
+ * @subpackage Distributed.Utilities.Data.Conversion.CSVToJson
+ */
 class EventInput extends EventInputAbstract
 {
     /**

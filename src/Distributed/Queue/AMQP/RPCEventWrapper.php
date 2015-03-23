@@ -45,7 +45,9 @@ class RPCEventWrapper implements EventTransmissionWrapperInterface
      */
     public function setEvent(EventInterface $event)
     {
-        $this->event = $event;
+        $data = serialize($event);
+        $data = extension_loaded('zlib') ? gzdeflate($data, 9) : $data;
+        $this->event = $data;
 
         return $this;
     }
@@ -57,7 +59,10 @@ class RPCEventWrapper implements EventTransmissionWrapperInterface
      */
     public function getEvent()
     {
-        return $this->event;
+        $data  = extension_loaded('zlib') ? gzinflate($this->event) : $this->event;
+        $event = unserialize($data);
+
+        return $event;
     }
 
     /**

@@ -9,7 +9,10 @@
 
 namespace com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion;
 
+use com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion\CSVToJson\Event;
+use com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion\CSVToJson\EventOutput;
 use InvalidArgumentException;
+use stdClass;
 
 class CSVToJsonFile extends CSVToJson
 {
@@ -19,9 +22,12 @@ class CSVToJsonFile extends CSVToJson
     protected $filename = null;
 
     /**
+     * Set the filename to be parsed.
+     *
      * @param $filename
      *
      * @return static
+     * @throws InvalidArgumentException Problem with CSV file
      */
     public function setFilename($filename)
     {
@@ -43,6 +49,9 @@ class CSVToJsonFile extends CSVToJson
     }
 
     /**
+     * Process the CSV file.
+     *
+     * @return void
      */
     public function process()
     {
@@ -61,8 +70,9 @@ class CSVToJsonFile extends CSVToJson
         $this->calculateHeaders();
 
         $chunk = [];
-        while (!feof($csv)) {
-            $chunk[] = fgetcsv($csv);
+        while (!feof($csv) && ($row = fgetcsv($csv) ) !== false) {
+
+            $chunk[] = $row;
 
             if (count($chunk) === $this->rowLimit) {
                 $this->dispatchEventForRows($chunk);
@@ -75,5 +85,15 @@ class CSVToJsonFile extends CSVToJson
         if (count($chunk) > 0) {
             $this->dispatchEventForRows($chunk);
         }
+    }
+
+    /**
+     * Is processing finished?
+     *
+     * @return bool
+     */
+    public function isFinished()
+    {
+        return true;
     }
 }

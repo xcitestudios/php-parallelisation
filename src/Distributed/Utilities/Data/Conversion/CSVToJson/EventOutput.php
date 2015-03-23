@@ -12,12 +12,54 @@ namespace com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion
 use com\xcitestudios\Parallelisation\EventOutput as EventOutputAbstract;
 use stdClass;
 
+/**
+ * Event output for converting CSV to JSON.
+ *
+ * @package com.xcitestudios.Parallelisation
+ * @subpackage Distributed.Utilities.Data.Conversion.CSVToJson
+ */
 class EventOutput extends EventOutputAbstract
 {
     /**
      * @var array
      */
     protected $jsonObjectStrings = [];
+
+    /**
+     * Get an array of JSON strings (not objects) that represent the CSV rows.
+     *
+     * @return array
+     */
+    public function getJsonObjectStrings()
+    {
+        return $this->jsonObjectStrings;
+    }
+
+    /**
+     * @param array $jsonObjectStrings
+     *
+     * @return static
+     */
+    public function setJsonObjectStrings(array $jsonObjectStrings)
+    {
+        $this->jsonObjectStrings = $jsonObjectStrings;
+
+        return $this;
+    }
+
+    /**
+     * Add a row result in to the local JSON array.
+     *
+     * @param string $json
+     */
+    public function addJsonObjectString($json)
+    {
+        if ($this->jsonObjectStrings === null) {
+            $this->jsonObjectStrings = [];
+        }
+
+        $this->jsonObjectStrings[] = $json;
+    }
 
     /**
      * Updates the element implementing this interface using a JSON representation.

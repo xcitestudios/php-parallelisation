@@ -13,6 +13,7 @@ use com\xcitestudios\Parallelisation\Distributed\Queue\AMQP\Interfaces\RPCDispat
 use com\xcitestudios\Parallelisation\Interfaces\EventInterface;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AbstractConnection;
+use PhpAmqpLib\Exception\AMQPTimeoutException;
 use PhpAmqpLib\Message\AMQPMessage;
 use DateTime;
 use stdClass;
@@ -68,17 +69,60 @@ class RPCDispatcher implements RPCDispatcherInterface
     protected $defaultRoutingKey = null;
 
     /**
+     * Running total of events to have returned.
+     *
+     * @var int
+     */
+    protected $completedEvents = 0;
+
+    /**
+     * Running total of events to have timed out.
+     *
+     * @var int
+     */
+    protected $timedOutEvents = 0;
+
+    /**
+     * Running total of events to be sent out.
+     *
+     * @var int
+     */
+    protected $dispatchedEvents = 0;
+
+    /**
+     * @var callable[]
+     */
+    protected $eventReturnedCallback = [];
+
+    /**
+     * @var callable[]
+     */
+    protected $eventTimedOutCallback = [];
+
+    /**
      * Constructor.
      *
      * @param AbstractConnection $connection
      * @param string             $queueName                    Name of return queue (default is to generate)
      * @param int                $maximumExecutionMilliseconds Maximum execution time for an event.
+     * @param callable           $eventReturnedCallback        Callback when events return.
+     * @param callable           $eventTimedOutCallback        Callback when events time out.
      */
-    public function __construct(AbstractConnection $connection, $queueName = null, $maximumExecutionMilliseconds = 0)
+    public function __construct(AbstractConnection $connection, $queueName = null, $maximumExecutionMilliseconds = 0,
+        callable $eventReturnedCallback = null, callable $eventTimedOutCallback = null)
     {
         $this->connection                   = $connection;
         $this->queueName                    = $queueName;
         $this->maximumExecutionMilliseconds = $maximumExecutionMilliseconds;
+
+        if (is_callable($eventReturnedCallback)) {
+            $this->eventReturnedCallback[] = $eventReturnedCallback;
+        }
+
+        if (is_callable($eventTimedOutCallback)) {
+            $this->eventTimedOutCallback[] = $eventTimedOutCallback;
+        }
+
     }
 
     /**
@@ -177,14 +221,21 @@ class RPCDispatcher implements RPCDispatcherInterface
             return;
         }
 
-        if (count($this->events) === 0) {
-            return;
-        }
-
         while (count($this->events) > 0) {
-            $this->channel->wait(null, true);
+            $this->quickWait();
             $this->checkLongRunning();
             usleep(50000);
+        }
+    }
+
+    /**
+     * Lets AMQP do its thing.
+     */
+    protected function quickWait()
+    {
+        try {
+            $this->channel->wait(null, true, 0.05);
+        } catch (AMQPTimeoutException $ex) {
         }
     }
 
@@ -227,8 +278,9 @@ class RPCDispatcher implements RPCDispatcherInterface
         $message = new AMQPMessage($event->serializeJSON(), ['correlation_id' => $correlationID, 'reply_to' => $this->queueName,]);
 
         $this->channel->basic_publish($message, $exchangeName, $routingKey);
-
         $this->channel->wait_for_pending_acks();
+
+        $this->dispatchedEvents++;
     }
 
     /**
@@ -261,6 +313,10 @@ class RPCDispatcher implements RPCDispatcherInterface
         $tempEvent->deserializeJSON($message->body);
         $event->setOutput($tempEvent->getOutput());
 
+        $this->doEventReturnedCallbacks($event);
+
+        $this->completedEvents++;
+
         $this->checkLongRunning();
     }
 
@@ -272,7 +328,6 @@ class RPCDispatcher implements RPCDispatcherInterface
         if ($this->maximumExecutionMilliseconds <= 0) {
             return;
         }
-
         foreach ($this->events as $correlationID => $wrapped) { /** @var RPCEventWrapper $wrapped */
             if ($wrapped->getTotalMilliseconds() > $this->maximumExecutionMilliseconds) {
                 $event     = $wrapped->getEvent();
@@ -286,8 +341,111 @@ class RPCDispatcher implements RPCDispatcherInterface
                 $tempEvent->deserializeJSON(json_encode($error));
                 $event->setOutput($tempEvent->getOutput());
 
+                $this->doEventTimedOutCallbacks($event);
+
                 unset($this->events[$correlationID]);
+
+                $this->timedOutEvents++;
             }
+        }
+    }
+
+    /**
+     * Get the running total of events that have been dispatched.
+     *
+     * @return int
+     */
+    public function getDispatchedEvents()
+    {
+        $this->quickWait();
+
+        return $this->dispatchedEvents;
+    }
+
+    /**
+     * Get the running total of events that have returned..
+     *
+     * @return int
+     */
+    public function getCompletedEvents()
+    {
+        $this->quickWait();
+
+        return $this->completedEvents;
+    }
+
+    /**
+     * Get the running total of events that have timed out.
+     *
+     * @return int
+     */
+    public function getTimedOutEvents()
+    {
+        $this->quickWait();
+        return $this->timedOutEvents;
+    }
+
+    /**
+     * @return callable[]
+     */
+    public function getEventReturnedCallbacks()
+    {
+        return $this->eventReturnedCallback;
+    }
+
+    /**
+     * @param callable $eventReturnedCallback
+     *
+     * @return static
+     */
+    public function addEventReturnedCallback(callable $eventReturnedCallback)
+    {
+        $this->eventReturnedCallback[] = $eventReturnedCallback;
+
+        return $this;
+    }
+
+    /**
+     * @return callable[]
+     */
+    public function getEventTimedOutCallbacks()
+    {
+        return $this->eventTimedOutCallback;
+    }
+
+    /**
+     * @param callable $eventTimedOutCallback
+     *
+     * @return static
+     */
+    public function addEventTimedOutCallback(callable $eventTimedOutCallback)
+    {
+        $this->eventTimedOutCallback[] = $eventTimedOutCallback;
+
+        return $this;
+    }
+
+    /**
+     * Run any event returned callbacks registered with the dispatcher.
+     *
+     * @param EventInterface $event
+     */
+    protected function doEventReturnedCallbacks(EventInterface $event)
+    {
+        foreach($this->eventReturnedCallback as $callback) {
+            $callback($event);
+        }
+    }
+
+    /**
+     * Run any even timed out callbacks registered with the dispatcher.
+     *
+     * @param EventInterface $event
+     */
+    protected function doEventTimedOutCallbacks(EventInterface $event)
+    {
+        foreach($this->eventTimedOutCallback as $callback) {
+            $callback($event);
         }
     }
 }
