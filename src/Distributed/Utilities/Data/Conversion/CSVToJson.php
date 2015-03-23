@@ -16,6 +16,12 @@ use com\xcitestudios\Parallelisation\Interfaces\EventHandlerInterface;
 use RuntimeException;
 use stdClass;
 
+/**
+ * Base class for CSVToJson converters.
+ *
+ * @package com.xcitestudios.Parallelisation
+ * @subpackage Distributed.Utilities.Data.Conversion
+ */
 abstract class CSVToJson
 {
     /**
@@ -54,6 +60,8 @@ abstract class CSVToJson
     protected $events = [];
 
     /**
+     * Specify the handler used for each event and the limit on the number of rows per event.
+     *
      * @param EventHandlerInterface $handler
      * @param int                   $rowLimit
      */
@@ -64,6 +72,8 @@ abstract class CSVToJson
     }
 
     /**
+     * Set the row limit for each event.
+     *
      * @param int $limit
      *
      * @return static
@@ -76,6 +86,8 @@ abstract class CSVToJson
     }
 
     /**
+     * Get the row limit for each event.
+     *
      * @return int
      */
     public function getRowLimitPerWorker()
@@ -84,6 +96,8 @@ abstract class CSVToJson
     }
 
     /**
+     * Set the custom headers to use.
+     *
      * @param array $headers
      *
      * @return static
@@ -96,6 +110,8 @@ abstract class CSVToJson
     }
 
     /**
+     * Get the custom headers specified.
+     *
      * @return array
      */
     public function getCustomHeaders()
@@ -104,6 +120,8 @@ abstract class CSVToJson
     }
 
     /**
+     * Enable the use of custom headers.
+     *
      * @return static
      */
     public function enableCustomHeaders()
@@ -114,6 +132,8 @@ abstract class CSVToJson
     }
 
     /**
+     * Disable the use of custom headers.
+     *
      * @return static
      */
     public function disableCustomHeaders()
@@ -124,11 +144,13 @@ abstract class CSVToJson
     }
 
     /**
+     * Designate the first row of the CSV as containing headers.
+     *
      * @param bool $firstRowIsHeaders
      *
      * @return static
      */
-    public function setFirstRowIsHeaders($firstRowIsHeaders = false)
+    public function setFirstRowIsHeaders($firstRowIsHeaders = true)
     {
         $this->firstRowIsHeaders = $firstRowIsHeaders;
 
@@ -136,6 +158,8 @@ abstract class CSVToJson
     }
 
     /**
+     * True if first row of the CSV is headers.
+     *
      * @return bool
      */
     public function isFirstRowHeaders()
@@ -144,7 +168,7 @@ abstract class CSVToJson
     }
 
     /**
-     *
+     * Make sure we have headers to use, populate this->headers with this->customHeaders if valid.
      */
     protected function calculateHeaders()
     {
@@ -160,6 +184,8 @@ abstract class CSVToJson
     }
 
     /**
+     * Dispatches an event for a collection of CSV rows.
+     *
      * @param array $rows
      */
     protected function dispatchEventForRows(array $rows)

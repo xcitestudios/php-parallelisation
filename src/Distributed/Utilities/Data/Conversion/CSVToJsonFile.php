@@ -14,6 +14,12 @@ use com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion\CSVTo
 use InvalidArgumentException;
 use stdClass;
 
+/**
+ * CSVToJson Handler for a file.
+ *
+ * @package com.xcitestudios.Parallelisation
+ * @subpackage Distributed.Utilities.Data.Conversion
+ */
 class CSVToJsonFile extends CSVToJson
 {
     /**
