@@ -86,7 +86,7 @@ class BlockingCSVToJsonFileDispatcher extends CSVToJsonFileDispatcher
             usleep(50000);
         }
 
-        return $this->rows;
+        return '[' . implode(',', $this->rows) . ']';
     }
 
     /**
