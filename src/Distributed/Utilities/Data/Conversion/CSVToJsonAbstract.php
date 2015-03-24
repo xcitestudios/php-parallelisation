@@ -23,7 +23,7 @@ use stdClass;
  * @package com.xcitestudios.Parallelisation
  * @subpackage Distributed.Utilities.Data.Conversion
  */
-abstract class CSVToJson implements CSVToJsonInterface
+abstract class CSVToJsonAbstract implements CSVToJsonInterface
 {
     /**
      * @var int

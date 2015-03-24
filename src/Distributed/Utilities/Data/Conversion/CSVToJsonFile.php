@@ -20,7 +20,7 @@ use stdClass;
  * @package com.xcitestudios.Parallelisation
  * @subpackage Distributed.Utilities.Data.Conversion
  */
-class CSVToJsonFile extends CSVToJson
+class CSVToJsonFile extends CSVToJsonAbstract
 {
     /**
      * @var string
