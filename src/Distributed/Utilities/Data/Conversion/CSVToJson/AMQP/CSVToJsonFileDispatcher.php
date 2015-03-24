@@ -61,10 +61,25 @@ class CSVToJsonFileDispatcher extends CSVToJsonFileBase
 
     /**
      * Process the CSV file. Returns immediately so other work can be done.
+     *
+     * @return void
      */
     public function process()
     {
-        parent::process();
+        $csvHandle = $this->prepareFileAndHeaders();
+        $this->handleRows($csvHandle);
+    }
+
+    /**
+     * Dispatches an event for a collection of CSV rows.
+     *
+     * @param array $rows
+     */
+    protected function dispatchEventForRows(array $rows)
+    {
+        $event = $this->createEventForRows($rows);
+
+        $this->handler->handle($event);
     }
 
     /**
