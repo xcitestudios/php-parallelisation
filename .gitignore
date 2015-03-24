@@ -3,3 +3,4 @@ vendor
 composer.lock
 .idea
 docs
+config.local.php
