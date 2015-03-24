@@ -22,7 +22,7 @@ use InvalidArgumentException;
 /**
  * RPC worker implementation for AMQP.
  *
- * @package com.xcitestudios.Parallelisation
+ * @package    com.xcitestudios.Parallelisation
  * @subpackage Distributed.Queue.AMQP
  */
 class RPCWorker implements RPCWorkerInterface
@@ -72,11 +72,15 @@ class RPCWorker implements RPCWorkerInterface
     /**
      * Constructor.
      *
-     * @param AbstractConnection    $connection AMQP connection.
-     * @param string                $queueName  Name of queue to watch for jobs on.
-     * @param string|callable       $handler    Handler called with each job that comes in, can use a callback to be dynamic. Callback signature is Function(body, routingKey).
-     * @param string|callable       $eventClass Class used for incoming events, can use callback to be dynamic. Callback signature is Function(body, routingKey).
-     * @param int                   $ackTime    When to send ACK (before or after handling the event).
+     * @param AbstractConnection $connection AMQP connection.
+     * @param string             $queueName  Name of queue to watch for jobs on.
+     * @param string|callable    $handler    Handler called with each job that comes in, can use a callback to be
+     *                                       dynamic. Callback signature is Function(body, routingKey). Must return
+     *                                       instance of {@see EventHandlerInterface}.
+     * @param string|callable    $eventClass Class used for incoming events, can use callback to be dynamic. Callback
+     *                                       signature is Function(body, routingKey). Must return class implementing
+     *                                       {@see EventInterface}.
+     * @param int                $ackTime    When to send ACK (before or after handling the event).
      */
     public function __construct(AbstractConnection $connection, $queueName, $handler, $eventClass, $ackTime = RPCWorkerAckTime::ACK_AFTER)
     {
@@ -124,7 +128,7 @@ class RPCWorker implements RPCWorkerInterface
         while (count($channel->callbacks) > 0) {
             try {
                 $channel->wait(null, true, 1);
-            } catch(AMQPTimeoutException $ex) {
+            } catch (AMQPTimeoutException $ex) {
                 //I'd prefer it not to do this.
             }
 
