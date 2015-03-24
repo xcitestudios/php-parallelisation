@@ -1,12 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Wade
- * Date: 19/03/2015
- * Time: 10:42
- */
 
-namespace ios\Parallelisation\Distributed\Queue\AMQP\Test;
+namespace com\xcitestudios\Parallelisation\Distributed\Queue\AMQP\Test;
 
 use com\xcitestudios\Parallelisation\Distributed\Queue\AMQP\RPCEventWrapper;
 use com\xcitestudios\Parallelisation\Interfaces\EventInterface;
