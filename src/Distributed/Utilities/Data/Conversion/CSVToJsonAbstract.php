@@ -180,11 +180,13 @@ abstract class CSVToJsonAbstract implements CSVToJsonInterface
     }
 
     /**
-     * Dispatches an event for a collection of CSV rows.
+     * Create an event for the rows to be handled.
      *
      * @param array $rows
+     *
+     * @return Event
      */
-    protected function dispatchEventForRows(array $rows)
+    protected function createEventForRows(array $rows)
     {
         $input = new EventInput();
         $input->setHeaders($this->headers);
@@ -194,7 +196,7 @@ abstract class CSVToJsonAbstract implements CSVToJsonInterface
         $event->setInput($input);
         $event->setOutput(new EventOutput());
 
-        $this->handler->handle($event);
+        return $event;
     }
 
     /**

@@ -28,6 +28,11 @@ class CSVToJsonFile extends CSVToJsonAbstract
     protected $filename = null;
 
     /**
+     * @var Event[]
+     */
+    protected $events = [];
+
+    /**
      * Set the filename to be parsed.
      *
      * @param $filename
@@ -55,11 +60,38 @@ class CSVToJsonFile extends CSVToJsonAbstract
     }
 
     /**
-     * Process the CSV file.
+     * Process the CSV file, blocks until completion.
      *
-     * @return void
+     * @return string
      */
     public function process()
+    {
+        $csvHandle = $this->prepareFileAndHeaders();
+        $this->handleRows($csvHandle);
+
+        while (!$this->isFinished()) {
+            usleep(50000);
+        }
+
+        $jsonObjects = '[';
+
+        foreach ($this->events as $event) {
+            foreach ($event->getOutput()->getJsonObjectStrings() as $row) {
+                $jsonObjects .= $row . ',';
+            }
+        }
+
+        $jsonObjects = substr($jsonObjects, 0, -1) . ']';
+
+        return $jsonObjects;
+    }
+
+    /**
+     * Open the CSV file, and do some basic checks then calculate headers.
+     *
+     * @return resource
+     */
+    protected function prepareFileAndHeaders()
     {
         if ($this->filename === null) {
             throw new InvalidArgumentException('Cannot call process without setting a filename first');
@@ -79,8 +111,20 @@ class CSVToJsonFile extends CSVToJsonAbstract
 
         $this->calculateHeaders();
 
+        return $csv;
+
+    }
+
+    /**
+     * Handle the rows in the provided stream (resource) of a CSV File. Stream is closed
+     * once the file is read.
+     *
+     * @param resource $csvHandle
+     */
+    protected function handleRows($csvHandle)
+    {
         $chunk = [];
-        while (!feof($csv) && ($row = fgetcsv($csv) ) !== false) {
+        while (!feof($csvHandle) && ($row = fgetcsv($csvHandle) ) !== false) {
 
             $chunk[] = $row;
 
@@ -90,11 +134,24 @@ class CSVToJsonFile extends CSVToJsonAbstract
             }
         }
 
-        fclose($csv);
+        fclose($csvHandle);
 
         if (count($chunk) > 0) {
             $this->dispatchEventForRows($chunk);
         }
+    }
+
+    /**
+     * Dispatches an event for a collection of CSV rows.
+     *
+     * @param array $rows
+     */
+    protected function dispatchEventForRows(array $rows)
+    {
+        $event          = $this->createEventForRows($rows);
+        $this->events[] = $event;
+
+        $this->handler->handle($event);
     }
 
     /**
@@ -104,6 +161,16 @@ class CSVToJsonFile extends CSVToJsonAbstract
      */
     public function isFinished()
     {
+        foreach ($this->events as $event) {
+            if ($event->getOutput() === null) {
+                return false;
+            }
+
+            if (count($event->getOutput()->getJsonObjectStrings()) === 0) {
+                return false;
+            }
+        }
+
         return true;
     }
 }
