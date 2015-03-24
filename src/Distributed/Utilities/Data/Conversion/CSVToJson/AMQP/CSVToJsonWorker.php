@@ -59,6 +59,8 @@ class CSVToJsonWorker implements EventHandlerInterface
             $output->addJsonObjectString(json_encode($jsonObject));
         }
 
+        $output->setWasSuccessful(true);
+
         $event->setOutput($output);
     }
 
@@ -73,7 +75,7 @@ class CSVToJsonWorker implements EventHandlerInterface
         $ret = new stdClass();
 
         for ($i = 0; $i < count($headers); $i++) {
-            $ret->{$headers[$i]} = array_key_exists($i, $row) ? $row[$i] : null;
+            $ret->{$headers[$i]} = array_key_exists($i, $row) ? $row[$i] : "";
         }
 
         return $ret;
