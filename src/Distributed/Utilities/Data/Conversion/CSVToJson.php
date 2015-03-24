@@ -12,6 +12,7 @@ namespace com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion
 use com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion\CSVToJson\EventInput;
 use com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion\CSVToJson\EventOutput;
 use com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion\CSVToJson\Event;
+use com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion\Interfaces\CSVToJsonInterface;
 use com\xcitestudios\Parallelisation\Interfaces\EventHandlerInterface;
 use RuntimeException;
 use stdClass;
@@ -22,7 +23,7 @@ use stdClass;
  * @package com.xcitestudios.Parallelisation
  * @subpackage Distributed.Utilities.Data.Conversion
  */
-abstract class CSVToJson
+abstract class CSVToJson implements CSVToJsonInterface
 {
     /**
      * @var int
@@ -53,11 +54,6 @@ abstract class CSVToJson
      * @var EventHandlerInterface
      */
     protected $handler;
-
-    /**
-     * @var array
-     */
-    protected $events = [];
 
     /**
      * Specify the handler used for each event and the limit on the number of rows per event.
