@@ -69,6 +69,10 @@ class CSVToJsonFile extends CSVToJson
 
         $csv = fopen($this->filename, 'r');
 
+        if (fread($csv, 3) != b"\xEF\xBB\xBF") {
+            rewind($csv);
+        }
+
         if ($this->firstRowIsHeaders) {
             $this->headers = fgetcsv($csv);
         }
