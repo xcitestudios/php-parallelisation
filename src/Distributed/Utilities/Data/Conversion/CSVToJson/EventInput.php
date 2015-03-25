@@ -31,6 +31,8 @@ class EventInput extends EventInputAbstract
     protected $rows;
 
     /**
+     * Get the headers to use for the CSV.
+     *
      * @return string[]
      */
     public function getHeaders()
@@ -39,6 +41,8 @@ class EventInput extends EventInputAbstract
     }
 
     /**
+     * Set the headers to use for the CSV.
+     *
      * @param string[] $headers
      *
      * @return static
@@ -51,6 +55,8 @@ class EventInput extends EventInputAbstract
     }
 
     /**
+     * Get the rows of the CSV.
+     *
      * @return array
      */
     public function getRows()
@@ -59,6 +65,8 @@ class EventInput extends EventInputAbstract
     }
 
     /**
+     * Set the rows of the CSV.
+     *
      * @param array $rows
      *
      * @return static

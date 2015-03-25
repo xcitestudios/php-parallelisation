@@ -36,6 +36,8 @@ class EventOutput extends EventOutputAbstract
     }
 
     /**
+     * Set the array of JSON strings (not objects) that represent the CSV rows.
+     *
      * @param array $jsonObjectStrings
      *
      * @return static

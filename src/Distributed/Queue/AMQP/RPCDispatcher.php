@@ -405,6 +405,8 @@ class RPCDispatcher implements RPCDispatcherInterface
     }
 
     /**
+     * Return an array of callbacks used when events return.
+     *
      * @return callable[]
      */
     public function getEventReturnedCallbacks()
@@ -413,6 +415,8 @@ class RPCDispatcher implements RPCDispatcherInterface
     }
 
     /**
+     * Add a callback to use when events return.
+     *
      * @param callable $eventReturnedCallback
      *
      * @return static
@@ -425,6 +429,8 @@ class RPCDispatcher implements RPCDispatcherInterface
     }
 
     /**
+     * Return an array of callbacks used when events time out.
+     *
      * @return callable[]
      */
     public function getEventTimedOutCallbacks()
@@ -433,6 +439,8 @@ class RPCDispatcher implements RPCDispatcherInterface
     }
 
     /**
+     * Add a callback to use when events time out.
+     *
      * @param callable $eventTimedOutCallback
      *
      * @return static
