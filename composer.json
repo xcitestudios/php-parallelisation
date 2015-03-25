@@ -17,7 +17,7 @@
     }
   ],
   "require": {
-    "xcitestudios/generic": "1.*",
+    "xcitestudios/generic": "^1.0.3",
     "xcitestudios/network": "^1.0.5"
   },
   "require-dev": {

@@ -9,15 +9,16 @@
 
 namespace com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion;
 
+use com\xcitestudios\Generic\Data\KeyValueStorage\ArrayStore;
+use com\xcitestudios\Generic\Data\KeyValueStorage\Interfaces\IterableStorageInterface;
 use com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion\CSVToJson\Event;
-use com\xcitestudios\Parallelisation\Distributed\Utilities\Data\Conversion\CSVToJson\EventOutput;
+use com\xcitestudios\Parallelisation\Interfaces\EventHandlerInterface;
 use InvalidArgumentException;
-use stdClass;
 
 /**
  * CSVToJson Handler for a file.
  *
- * @package com.xcitestudios.Parallelisation
+ * @package    com.xcitestudios.Parallelisation
  * @subpackage Distributed.Utilities.Data.Conversion
  */
 class CSVToJsonFile extends CSVToJsonAbstract
@@ -28,9 +29,24 @@ class CSVToJsonFile extends CSVToJsonAbstract
     protected $filename = null;
 
     /**
-     * @var Event[]
+     * @var IterableStorageInterface
      */
-    protected $events = [];
+    protected $events;
+
+    /**
+     * Specify the handler used for each event and the limit on the number of rows per event.
+     *
+     * @param EventHandlerInterface    $handler
+     * @param int                      $rowLimit
+     * @param IterableStorageInterface $eventStorage          Handles local storage of events. Will use {@see
+     *                                                        ArrayStore} by default.
+     */
+    public function __construct(EventHandlerInterface $handler, $rowLimit = 100, IterableStorageInterface $eventStorage = null)
+    {
+        parent::__construct($handler, $rowLimit);
+
+        $this->events = $eventStorage ?: new ArrayStore();
+    }
 
     /**
      * Set the filename to be parsed.
@@ -50,7 +66,7 @@ class CSVToJsonFile extends CSVToJsonAbstract
             throw new InvalidArgumentException(sprintf('CSV file %s is not readable.', $filename));
         }
 
-        if(filesize($filename) === 0) {
+        if (filesize($filename) === 0) {
             throw new InvalidArgumentException(sprintf('Cannot use zero length file %s', $filename));
         }
 
@@ -76,6 +92,7 @@ class CSVToJsonFile extends CSVToJsonAbstract
         $jsonObjects = '[';
 
         foreach ($this->events as $event) {
+            /** @var Event $event */
             foreach ($event->getOutput()->getJsonObjectStrings() as $row) {
                 $jsonObjects .= $row . ',';
             }
@@ -124,7 +141,7 @@ class CSVToJsonFile extends CSVToJsonAbstract
     protected function handleRows($csvHandle)
     {
         $chunk = [];
-        while (!feof($csvHandle) && ($row = fgetcsv($csvHandle) ) !== false) {
+        while (!feof($csvHandle) && ($row = fgetcsv($csvHandle)) !== false) {
 
             $chunk[] = $row;
 
@@ -148,8 +165,9 @@ class CSVToJsonFile extends CSVToJsonAbstract
      */
     protected function dispatchEventForRows(array $rows)
     {
-        $event          = $this->createEventForRows($rows);
-        $this->events[] = $event;
+        $event = $this->createEventForRows($rows);
+
+        $this->events->set(microtime(true) . rand(1, 32768), $event);
 
         $this->handler->handle($event);
     }
@@ -162,6 +180,7 @@ class CSVToJsonFile extends CSVToJsonAbstract
     public function isFinished()
     {
         foreach ($this->events as $event) {
+            /** @var Event $event */
             if ($event->getOutput() === null) {
                 return false;
             }
