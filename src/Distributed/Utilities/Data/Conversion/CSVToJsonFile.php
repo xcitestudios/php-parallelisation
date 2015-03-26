@@ -166,8 +166,11 @@ class CSVToJsonFile extends CSVToJsonAbstract
     protected function dispatchEventForRows(array $rows)
     {
         $event = $this->createEventForRows($rows);
+        
+        while ($this->events->has($key = uniqid("", true))) {
+        }
 
-        $this->events->set(microtime(true) . rand(1, 32768), $event);
+        $this->events->set(key, $event);
 
         $this->handler->handle($event);
     }
