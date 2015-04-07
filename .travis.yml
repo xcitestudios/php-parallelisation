@@ -10,7 +10,8 @@ cache:
     - $HOME/.composer/cache
     
 allow_failures:
-  - php: hhvm-nightly
+  - php: hhvm
+  - php: nightly
   
 before_script:
   - composer install

@@ -85,7 +85,7 @@ class CSVToJsonFileTest extends \PHPUnit_Framework_TestCase
         $file = __DIR__ . '/simple_headers.csv';
 
         $handlerMock = $this->getMockBuilder(EventHandlerInterface::class)
-                            ->setMethods(['handle'])
+                            ->setMethods(['handle', 'deserializeJSON', 'serializeJSON'])
                             ->getMockForAbstractClass();
 
         $converter = new CSVToJsonFile($handlerMock);
