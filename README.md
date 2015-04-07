@@ -1,5 +1,7 @@
 # com.xcitestudios.Parallelisation
 
+[![Build Status](https://travis-ci.org/xcitestudios/php-parallelisation.svg?branch=master)](https://travis-ci.org/xcitestudios/php-parallelisation)
+
 Interfaces designed to unify and simplify cross language and distributed functions across multiple languages (PHP edition).
 
 
