@@ -168,9 +168,9 @@ class CSVToJsonFile extends CSVToJsonAbstract
         $event = $this->createEventForRows($rows);
         
         while ($this->events->has($key = uniqid("", true))) {
-        }
+		}
 
-        $this->events->set(key, $event);
+        $this->events->set($key, $event);
 
         $this->handler->handle($event);
     }
