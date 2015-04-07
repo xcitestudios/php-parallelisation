@@ -11,7 +11,9 @@ class RPCEventWrapperTest extends \PHPUnit_Framework_TestCase
     public function testGetSetConsistency()
     {
         $dt = new DateTime();
-        $e = $this->getMockForAbstractClass(EventInterface::class);
+        $e = $this->getMockBuilder(EventInterface::class)
+                            ->setMethods(['deserializeJSON', 'serializeJSON'])
+                            ->getMockForAbstractClass();
 
         $wrapper = new RPCEventWrapper();
         $wrapper->setDatetime($dt);
