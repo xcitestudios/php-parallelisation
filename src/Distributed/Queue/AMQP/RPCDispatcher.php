@@ -343,15 +343,9 @@ class RPCDispatcher implements RPCDispatcherInterface
             /** @var RPCEventWrapper $wrapped */
             if ($wrapped->getTotalMilliseconds() > $this->maximumExecutionMilliseconds) {
                 $event     = $wrapped->getEvent();
-                $tempEvent = clone $event;
 
-                $error                          = new stdClass();
-                $error->output                  = new stdClass();
-                $error->output->success         = false;
-                $error->output->responseMessage = 'Timed out';
-
-                $tempEvent->deserializeJSON(json_encode($error));
-                $event->setOutput($tempEvent->getOutput());
+                $event->setWasSuccessful(false);
+                $event->setResponseMessage('Timed out');
 
                 $this->doEventTimedOutCallbacks($event);
 

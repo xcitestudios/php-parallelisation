@@ -59,8 +59,7 @@ class CSVToJsonWorker implements EventHandlerInterface
             $output->addJsonObjectString(json_encode($jsonObject));
         }
 
-        $output->setWasSuccessful(true);
-
+        $event->setWasSuccessful(true);
         $event->setOutput($output);
     }
 

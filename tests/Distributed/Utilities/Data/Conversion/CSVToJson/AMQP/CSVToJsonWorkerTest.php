@@ -66,7 +66,7 @@ class CSVToJsonWorkerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf(EventOutput::class, $output);
 
-        $this->assertTrue($output->wasSuccessful());
+        $this->assertTrue($event->wasSuccessful());
         $this->assertEquals('{"A":"a","B":"b"}', $output->getJsonObjectStrings()[0]);
         $this->assertEquals('{"A":"1","B":"2"}', $output->getJsonObjectStrings()[1]);
     }

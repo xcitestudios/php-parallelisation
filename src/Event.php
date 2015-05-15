@@ -23,6 +23,16 @@ use stdClass;
 abstract class Event implements EventInterface, JsonSerializable
 {
     /**
+     * @var boolean
+     */
+    protected $successful = false;
+
+    /**
+     * @var string
+     */
+    protected $responseMessage;
+
+    /**
      * @var EventInputInterface
      */
     protected $input;
@@ -95,6 +105,51 @@ abstract class Event implements EventInterface, JsonSerializable
         return $this->output;
     }
 
+    /**
+     * Sets if the event handled correctly and can the data be trusted to be correct for the request.
+     *
+     * @param bool $success True if yes, false if no.
+     *
+     * @return static
+     */
+    public function setWasSuccessful($success)
+    {
+        $this->successful = $success;
+
+        return $this;
+    }
+
+    /**
+     * Did the event get handled correctly and can the data be trusted to be correct for the request.
+     *
+     * @return bool
+     */
+    public function wasSuccessful()
+    {
+        return $this->successful;
+    }
+
+    /**
+     * Get a general human readable response, useful for providing an error message if WasSuccessful returns false.
+     */
+    public function getResponseMessage()
+    {
+        return $this->responseMessage;
+    }
+
+    /**
+     * Set a general human readable response, useful for providing an error message if WasSuccessful returns false.
+     *
+     * @param string $message The message to set
+     *
+     * @return static
+     */
+    public function setResponseMessage($message)
+    {
+        $this->responseMessage = $message;
+
+        return $this;
+    }
 
     /**
      * Updates the element implementing this interface using a JSON representation.
@@ -116,6 +171,14 @@ abstract class Event implements EventInterface, JsonSerializable
 
         if (property_exists($tempObj, 'output') && $this->output instanceof EventOutputInterface) {
             $this->output->deserializeJSON(json_encode($tempObj->output));
+        }
+
+        if (property_exists($tempObj, 'successful') && is_bool($tempObj->successful)) {
+            $this->successful = (bool)$tempObj->successful;
+        }
+
+        if (property_exists($tempObj, 'responseMessage') && is_string($tempObj->responseMessage)) {
+            $this->responseMessage = $tempObj->responseMessage;
         }
 
         return $tempObj;
@@ -152,6 +215,9 @@ abstract class Event implements EventInterface, JsonSerializable
         if ($this->output instanceof EventOutputInterface) {
             $ret->output = json_decode(json_encode($this->getOutput()));
         }
+
+        $ret->successful      = $this->wasSuccessful();
+        $ret->responseMessage = $this->getResponseMessage();
 
         return $ret;
     }
